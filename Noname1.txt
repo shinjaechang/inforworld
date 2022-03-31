@@ -1,0 +1,29 @@
+      axios.post(`${SDLUtil.API_URL}/api/v1/shared/common/files/${fileId}/download`).then((res) => {
+        let fileName;
+        if (res.headers['content-disposition'] == null) {
+          fileName = 'download_LogFile';
+        } else {
+          fileName = decodeURIComponent(res.headers['content-disposition'].substring(res.headers['content-disposition'].indexOf('fileName=') + 10, res.headers['content-disposition'].length)).replace(/\+/g, ' ');
+        }
+
+        if (res.data && res.data.size > 0) {
+          if (typeof (window.navigator.msSaveOrOpenBlob) !== 'undefined') {
+            // IE 10+
+            window.navigator.msSaveOrOpenBlob(res.data, fileName);
+          } else {
+            const URL = window.URL || window.webkitURL;
+            const a = document.createElement('a');
+            a.id = 'tmpLink';
+            a.href = URL.createObjectURL(res.data);
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+
+            $(a).remove();
+          }
+        } else {
+          console.log('¼º°ø');
+        }
+      }).catch((err) => {
+        vm.showProgressCircle = false;
+      });
